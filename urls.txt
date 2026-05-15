@@ -1,0 +1,42 @@
+# BTObot — URL seed list
+# ========================
+# Add one URL per line.  Lines starting with # are ignored.
+# Run:  python ingest.py          (to ingest)
+#       python ingest.py --reset  (to wipe DB and re-ingest)
+#
+# HDB redesigned their website in 2024/2025.
+# New base: https://www.hdb.gov.sg/buying-a-flat/...
+
+# ===========================================================================
+# HDB Official — Eligibility & Grants
+# ===========================================================================
+https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/couples-and-families
+https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/housing-loan
+https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/housing-loan/housing-loan-from-hdb
+https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/application-for-an-hdb-flat-eligibility-hfe-letter
+https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/application-for-an-hdb-flat-eligibility-hfe-letter/income-guidelines-and-documents
+https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/couples-and-families/enhanced-cpf-housing-grant
+https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/couples-and-families/cpf-housing-grants
+https://www.hdb.gov.sg/buying-a-flat/flat-grant-and-loan-eligibility/couples-and-families/proximity-housing-grant
+
+# ===========================================================================
+# HDB Official — Financial Planning
+# ===========================================================================
+https://www.hdb.gov.sg/buying-a-flat/financial-planning-for-a-flat-purchase/ability-to-pay
+https://www.hdb.gov.sg/buying-a-flat/financial-planning-for-a-flat-purchase/budget-for-a-flat
+https://www.hdb.gov.sg/buying-a-flat/financial-planning-for-a-flat-purchase/credit-to-finance-a-flat-purchase
+
+# ===========================================================================
+# HDB Official — BTO Process
+# ===========================================================================
+https://www.hdb.gov.sg/buying-a-flat/bto-sbf-and-open-booking-of-flats/process-for-buying-a-new-flat/overview
+https://www.hdb.gov.sg/buying-a-flat/bto-sbf-and-open-booking-of-flats/finding-a-new-flat
+https://www.hdb.gov.sg/buying-a-flat/bto-sbf-and-open-booking-of-flats/process-for-buying-a-new-flat/booking-of-flat
+https://www.hdb.gov.sg/buying-a-flat/bto-sbf-and-open-booking-of-flats/process-for-buying-a-new-flat/modes-of-sales
+
+# ===========================================================================
+# Community / Blogs (add more as needed)
+# ===========================================================================
+https://www.homejourney.sg/blog/hdb-bto-application-process-2026-guide-202602180002
+https://pride.kindness.sg/the-key-to-our-home-journey-as-a-first-time-buyer/
+https://acemortgage.sg/complete-guide-to-bto-eligibility-application-process-and-financial-planning-in-singapore/

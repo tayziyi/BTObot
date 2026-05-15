@@ -1,0 +1,41 @@
+services:
+
+  # ── Ollama inference server ──────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_models:/root/.ollama   # model weights persist across restarts
+    ports:
+      - "11434:11434"                 # expose for optional host-side testing
+    healthcheck:
+      test: ["CMD", "ollama", "list"]   # ollama binary is always present; curl is not
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+
+  # ── BTObot application ───────────────────────────────────────────────────────
+  btobot:
+    build: .
+    depends_on:
+      ollama:
+        condition: service_healthy   # waits until Ollama passes its health-check
+    ports:
+      - "8000:8000"
+    env_file: .env                   # load chunk sizes, retrieval knobs, etc.
+    environment:
+      # Override the .env value so the app talks to the compose-internal service
+      OLLAMA_BASE_URL: http://ollama:11434
+      # Shelve creates files *beside* the path (parent_store.db, .dir, .bak).
+      # The named volume is mounted as a directory, so we point shelve at a
+      # file *inside* that directory to avoid the "Is a directory" error.
+      PARENT_STORE_PATH: ./parent_store_vol/store
+    volumes:
+      - btobot_chroma:/app/chroma_db           # ChromaDB persists across restarts
+      - btobot_parents:/app/parent_store_vol   # shelve files live inside this dir
+
+# ── Named volumes ────────────────────────────────────────────────────────────
+volumes:
+  ollama_models:    # Ollama model weights (~2.2 GB for qwen2.5:3b + nomic)
+  btobot_chroma:    # ChromaDB vector store
+  btobot_parents:   # Parent document shelve store

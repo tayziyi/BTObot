@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Environment — contains local overrides; never commit secrets
+.env
+
+# Generated databases — too large and machine-specific for version control
+chroma_db/
+parent_store/
+parent_store_vol/
+*.db
+*.db.dir
+*.db.dat
+*.db.bak
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo

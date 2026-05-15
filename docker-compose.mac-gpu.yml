@@ -1,0 +1,29 @@
+# Apple Silicon GPU override
+# ─────────────────────────────────────────────────────────────────────────────
+# Docker on macOS cannot access Metal GPU — the Linux VM has no GPU pass-through.
+# This override runs ONLY the btobot container in Docker and points it at a
+# natively-running Ollama process on the host, which DOES use Metal.
+#
+# Usage:
+#   Step 1 — start Ollama natively (in a separate terminal, keep it running):
+#     OLLAMA_MAX_LOADED_MODELS=2 OLLAMA_FLASH_ATTENTION=1 ollama serve
+#
+#   Step 2 — start btobot (no bundled Ollama container):
+#     docker compose -f docker-compose.yml -f docker-compose.mac-gpu.yml up --build
+#
+#   Subsequent runs (volumes already populated):
+#     docker compose -f docker-compose.yml -f docker-compose.mac-gpu.yml up
+
+services:
+
+  # Suppress the bundled Ollama container — we use the native host one instead.
+  ollama:
+    profiles: ["bundled-ollama"]   # inactive unless --profile bundled-ollama is passed
+
+  btobot:
+    depends_on:
+      ollama:
+        condition: service_started
+        required: false            # don't wait for the (inactive) ollama service
+    environment:
+      OLLAMA_BASE_URL: http://host.docker.internal:11434   # host's native Ollama

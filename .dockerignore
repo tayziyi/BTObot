@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Version control
+.git/
+.gitignore
+
+# Local databases — use named Docker volumes instead
+chroma_db/
+parent_store/
+*.db
+*.db.dir
+*.db.dat
+*.db.bak
+
+# Secrets — passed at runtime via docker-compose env_file, not baked in
+.env
+
+# Editor / OS noise
+.DS_Store
+*.swp
+*.swo
