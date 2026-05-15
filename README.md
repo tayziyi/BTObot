@@ -327,30 +327,6 @@ LLM_MODEL=qwen2.5:1.5b   # ~2× faster generation, slightly lower quality
 
 **What the numbers would tell you.** A high pass rate with low citation faithfulness means the model is getting the right answers by luck or general knowledge, not grounding — a deployment risk. A low pass rate with high citation faithfulness means the retrieval is surfacing the right passages but the LLM is misreading them — a different problem. The combination distinguishes between retrieval failures, generation failures, and grounding failures in a way that a single aggregate score cannot.
 
-### Sample test set (15 questions)
-
-Questions are labelled by category: **E** = eligibility lookup, **F** = figure retrieval, **P** = process/timeline, **O** = out-of-scope (expect deflection).
-
-| # | Category | Question | What a correct answer requires |
-|---|---|---|---|
-| 1 | E | A couple with a combined monthly income of $10,500 — do they qualify for the Enhanced Housing Grant? | Correctly apply the EHG income ceiling ($9,000 for families; $4,500 for singles) and return a no |
-| 2 | E | Can a couple where one party is a Singapore PR and the other is a Singapore Citizen apply for a BTO flat? | Confirm yes under the SC/PR household scheme, with the SC as the primary applicant |
-| 3 | E | Is a 34-year-old single person eligible to apply for a BTO flat? | Confirm yes under the Singles scheme (≥35 years old) — return a no with the correct age threshold |
-| 4 | E | If I previously received a housing subsidy as a second-timer, can I still apply for another BTO flat? | Identify second-timer status and correctly state the additional conditions and resale levy obligations |
-| 5 | E | A couple where one party previously owned a private property — are they eligible for the Family Grant? | Apply the eligibility rule requiring both applicants to not have previously owned subsidised housing or private property |
-| 6 | F | What is the income ceiling for a first-timer family applying for a 4-room BTO flat? | Return the correct figure ($14,000/month for most estates; $7,000 for PLH flats) |
-| 7 | F | What is the maximum Enhanced Housing Grant amount a first-timer family can receive? | Return $120,000 (for households earning ≤$1,500/month) |
-| 8 | F | How much is the Proximity Housing Grant for a family living with parents in the same town? | Return $30,000 (living with) vs $20,000 (living near) distinction |
-| 9 | F | What is the minimum cash downpayment required when taking an HDB housing loan? | Return that HDB loan requires no minimum cash — up to 80% LTV, payable fully from CPF |
-| 10 | F | What CPF Ordinary Account savings can be used for — purchase price, stamp duty, or both? | Confirm CPF OA can be used for the purchase price, legal fees, and stamp duty |
-| 11 | P | What is the correct sequence of steps from BTO application to key collection? | Return the steps in order: apply → ballot → book flat → sign agreement → pay → key collection |
-| 12 | P | When does the HDB Loan Eligibility (HLE) letter need to be obtained relative to the flat selection appointment? | State it must be obtained before the flat selection appointment |
-| 13 | P | What happens if I miss my flat selection appointment slot? | State the consequence (forfeit queue position / treated as having declined) |
-| 14 | O | What is the resale levy amount for selling a 5-room subsidised flat? | Deflect — resale levy specifics are not in the knowledge base |
-| 15 | O | How is the Additional Buyer's Stamp Duty calculated for a second residential property? | Deflect — stamp duty is not covered in the knowledge base |
-
----
-
 ## Known Limitations
 
 ### Knowledge coverage
