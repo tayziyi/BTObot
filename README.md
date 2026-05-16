@@ -103,14 +103,10 @@ Python packages: see `requirements.txt`.
 
 ## Setup & Running
 
-**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+**Prerequisites:** [Ollama](https://ollama.com/download/mac) and [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
 BTObot can be ran with **Docker** in one command and no manual setup.
 
-[Ollama](https://ollama.com/download/mac) installed .
-
-
-Docker's bundled Ollama container runs CPU-only on all platforms. Use the override files below to enable GPU:
 
 ```bash
 git clone <repo-url>
@@ -121,14 +117,14 @@ cp .env.example .env          # edit if needed (defaults work out of the box)
 ---
 **Apple Silicon Mac** — run Ollama natively (Metal GPU), BTObot in Docker:
 ```bash
-# Terminal 1 — keep running
+# Terminal 1 — make sure ollama running
 OLLAMA_MAX_LOADED_MODELS=2 OLLAMA_FLASH_ATTENTION=1 ollama serve
 
 # Terminal 2
 docker compose -f docker-compose.yml -f docker-compose.mac-gpu.yml up --build
 ```
 
-**Windows / Linux with NVIDIA** — requires [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html):
+**Windows / Linux ** 
 ```bash
 docker compose -f docker-compose.yml up --build
 ```
@@ -139,7 +135,7 @@ docker compose -f docker-compose.yml up --build
 |---|---|
 | Normal start (CPU) | `docker compose up` |
 | Normal start (Apple Silicon GPU) | `ollama serve` + `docker compose -f docker-compose.yml -f docker-compose.mac-gpu.yml up` |
-| Normal start (NVIDIA GPU) | `docker compose -f docker-compose.yml -f up` |
+| Normal start | `docker compose -f docker-compose.yml -f up` |
 | After editing source code | add `--build` to whichever command above |
 | Stop (keep data) | `docker compose down` |
 | Wipe DB and re-ingest | `docker compose down -v` then `docker compose up` |
@@ -162,8 +158,7 @@ BTObot/
 ├── .gitignore
 ├── Dockerfile                    # Python 3.12 + Playwright Chromium
 ├── docker-compose.yml            # Default: bundled Ollama (CPU) + btobot
-├── docker-compose.mac-gpu.yml    # Override: native Ollama (Metal GPU) on Apple Silicon
-├── docker-compose.nvidia-gpu.yml # Override: NVIDIA GPU passthrough on Windows/Linux
+├── docker-compose.mac-gpu.yml    # Override: native Ollama passthrough on Windows/Linux
 ├── entrypoint.sh                 # Container startup: wait → pull models → ingest → serve
 ├── chainlit.md                   # Chainlit welcome page config
 ├── chroma_db/                    # ChromaDB vector store (created by ingest.py, git-ignored)
