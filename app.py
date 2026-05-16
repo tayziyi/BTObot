@@ -50,8 +50,6 @@ def get_llm() -> ChatOllama:
             base_url=OLLAMA_BASE_URL,
             temperature=LLM_TEMPERATURE,
             streaming=True,
-            num_predict=400,   # cap output tokens — primary latency fix
-                               # ~400 tok ÷ 5-8 tok/s ≈ 50-80s max vs unbounded 2048
         )
     return _llm
 

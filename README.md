@@ -1,33 +1,32 @@
 # BTObot
 
-A locally-hosted AI assistant for Singapore's Build-To-Order (BTO) housing scheme. Designed for young couples navigating eligibility, grants, financial planning, and the application process — all sourced directly from HDB's official website, with no data leaving your machine.
+AI assistant for Singapore's Build-To-Order (BTO) housing scheme. Designed for young couples navigating eligibility, grants, financial planning, and the application process, all sourced directly from HDB's official website as well as trusted blogs curated.
 
 ---
 
-## What It Does
+## What BTObot Does
 
-BTObot answers natural-language questions about BTO housing by:
+It answers natural-language questions about BTO housing by:
 
-1. **Retrieving** the most relevant passages from a pre-indexed snapshot of HDB's official guidance pages
+1. **Retrieving** the most relevant context from a pre-indexed snapshot of HDB's official guidance pages and latest trustworthy blogs
 2. **Generating** a grounded, cited answer using a local LLM
-3. **Showing** the exact source passages in collapsible side panels so you can verify every claim
+3. **Showing** the exact source context in collapsible side panels so you can verify every claim
 
-Example questions it handles well:
-- *"Am I eligible for the Enhanced Housing Grant as a couple?"*
+Example questions:
+- *"Who are eligible for the Enhanced Housing Grant?"*
 - *"What is the income ceiling for a 4-room BTO flat?"*
-- *"How does the balloting process work?"*
-- *"What CPF and cash is needed at key collection?"*
+- *"Show me the process of buying a BTO flat."*
 
 ---
 
-## Why
+## Why BTObot
 
-BTO eligibility rules, grant amounts, and application timelines change frequently. Searching HDB's website manually is slow and the answers are spread across many pages. BTObot consolidates seven official HDB pages into a single conversational interface that:
+The current chatbot available in HDB portal does not provide a direct answer to users but shares relevant links. Additionally, BTO eligibility rules, grant amounts, and application timelines change frequently. Searching HDB's website manually is slow and the answers are spread across many pages. BTObot consolidates the latest official HDB pages into a single conversational interface that:
 
-- Runs **100% locally** — no query or document leaves your machine
-- **Cites sources inline** ([1][2][3]) so answers are verifiable
+- Answers user enquires directly with retrieved context
 - Refuses to fabricate — if context is absent, it says so and points to HDB directly
-- Works inside a corporate network without requiring external AI API access
+- **Cites sources inline** ([1][2][3]) so answers are verifiable
+
 
 ---
 
@@ -40,7 +39,7 @@ BTO eligibility rules, grant amounts, and application timelines change frequentl
 │  urls.txt                                                        │
 │      │                                                           │
 │      ▼  Playwright (headless Chromium)                           │
-│  Raw HTML  ──BeautifulSoup──▶  Plain text  (~7 pages)            │
+│  Raw HTML  ──BeautifulSoup──▶  Plain text                        │
 │      │                                                           │
 │      ▼  RecursiveCharacterTextSplitter  (1200 chars / 120 ovlp)  │
 │  Parent chunks  ──────────────────────▶  parent_store/  (shelve) │
@@ -49,7 +48,7 @@ BTO eligibility rules, grant amounts, and application timelines change frequentl
 │  Child chunks  ──nomic-embed-text──▶  768-dim vectors            │
 │      │                                                           │
 │      ▼                                                           │
-│  ChromaDB  (chroma_db/)   ~369 child vectors persisted to disk   │
+│  ChromaDB  (chroma_db/)                                          │
 └──────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────┐
@@ -69,50 +68,22 @@ BTO eligibility rules, grant amounts, and application timelines change frequentl
 │      ▼  Cosine-similarity reranker  (numpy, no download needed)  │
 │  Top-3 parent chunks  (first 700 chars each → LLM prompt)        │
 │      │                                                           │
-│      ▼  qwen2.5:3b via ChatOllama  (num_predict=400)             │
+│      ▼  qwen2.5:3b via ChatOllama                                │
 │  Streamed answer  +  source side panels                          │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-### Key design choices
+## Key design choices
 
 | Component | Choice | Reason |
 |---|---|---|
-| LLM | `qwen2.5:3b` via Ollama | Runs on CPU; 32k context; strong instruction following |
-| Embeddings | `nomic-embed-text` via Ollama | 274 MB, 768-dim, faster than mxbai-embed-large on CPU |
+| LLM | `qwen2.5:3b` via Ollama | 32k context; strong instruction following; lightweight model|
+| Embeddings | `nomic-embed-text` via Ollama | 274 MB, 768-dim, lightweight to run locally |
 | Vector store | ChromaDB (persistent) | Zero-config, embedded SQLite, survives restarts |
 | Parent-child chunking | Child=600 chars for search, Parent=1200 chars for LLM | Precise retrieval without losing surrounding context |
 | Reranker | Cosine similarity (numpy) |  |
 | Scraper | Playwright headless Chromium | HDB.gov.sg is a JS-rendered React SPA; `requests` returns empty |
 | Frontend | Chainlit | Native async streaming, built-in step indicators, side panels |
-| Context truncation | 700 chars per source in prompt | Reduces LLM pre-fill time from ~110s to ~33s on Intel CPU |
-
----
-
-## Results
-
-Tested against the 7 ingested HDB pages (knowledge base snapshot: May 2026):
-
-| Query type | Quality |
-|---|---|
-| Direct eligibility questions (income ceiling, citizenship) | ✅ Accurate, cited |
-| Grant amounts (EHG, CPF Housing Grant, PHG) | ✅ Accurate if in KB |
-| Application process steps | ✅ Good summary |
-| Complex multi-condition eligibility ("if my income is X and Y…") | ⚠️ Occasional reasoning errors |
-| BTO launch dates / specific projects | ❌ Not in KB — correctly declines |
-| Resale flat prices | ❌ Not in KB — correctly declines |
-
-**Latency** (Intel Core i7, macOS, CPU-only):
-
-| Stage | Time |
-|---|---|
-| Model warmup at first connect | ~50s (background) |
-| embed_query (warm model) | ~0.2s |
-| ChromaDB search | ~0.03s |
-| LLM generation (≤400 tokens) | ~50–80s |
-| **Total per query (warm)** | **~50–80s** |
-
----
 
 ## Requirements
 
@@ -124,47 +95,20 @@ Tested against the 7 ingested HDB pages (knowledge base snapshot: May 2026):
 | `nomic-embed-text` | — | `ollama pull nomic-embed-text` |
 | Playwright Chromium | — | `playwright install chromium` |
 
-Python packages: see `requirements.txt`. Notable additions not in requirements.txt that may be needed on corporate networks:
-- `pip-system-certs` — injects macOS/Windows system CA certificates into Python's SSL bundle (required if behind an SSL-inspecting proxy such as Zscaler)
+Python packages: see `requirements.txt`.
 
 ---
 
 ## Setup & Running
 
-There are two ways to run BTObot: **Docker** (recommended — one command, no manual setup) or **local** (faster iteration if you are actively developing).
-
----
-
-### Option A — Docker (recommended)
-
 **Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-```bash
-git clone <repo>
-cd BTObot
-cp .env.example .env          # edit if needed (defaults work out of the box)
-docker compose up --build
-```
-
-Open **http://localhost:8000** once you see:
-```
-[BTObot] Starting on http://localhost:8000
-```
-
-**First run** (~10–15 min): pulls `qwen2.5:3b` + `nomic-embed-text`, scrapes and embeds the HDB pages.  
-**Subsequent runs** (`docker compose up`): volumes already populated, ready in ~30 seconds.
-
-#### GPU acceleration
+BTObot can be ran with **Docker** in one command and no manual setup.
 
 Docker's bundled Ollama container runs CPU-only on all platforms. Use the override files below to enable GPU:
 
-| Platform | GPU available? | Command |
-|---|---|---|
-| Any OS | ❌ CPU only (default) | `docker compose up --build` |
-| Apple Silicon Mac | ✅ Metal via native Ollama | See below |
-| Windows / Linux with NVIDIA | ✅ CUDA passthrough | See below |
-
-**Apple Silicon Mac** — run Ollama natively (Metal GPU), btobot in Docker:
+---
+**Apple Silicon Mac** — run Ollama natively (Metal GPU), BTObot in Docker:
 ```bash
 # Terminal 1 — keep running
 OLLAMA_MAX_LOADED_MODELS=2 OLLAMA_FLASH_ATTENTION=1 ollama serve
@@ -189,64 +133,6 @@ docker compose -f docker-compose.yml -f docker-compose.nvidia-gpu.yml up --build
 | Stop (keep data) | `docker compose down` |
 | Wipe DB and re-ingest | `docker compose down -v` then `docker compose up` |
 
----
-
-### Option B — Local (manual)
-
-Use this if you are actively developing and want faster iteration without rebuilding the image.
-
-#### 1. Create virtual environment
-
-```bash
-git clone <repo>
-cd BTObot
-python3.12 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-playwright install chromium
-```
-
-#### 2. Configure environment
-
-```bash
-cp .env.example .env
-# Edit .env to override defaults (model names, chunk sizes, etc.)
-```
-
-#### 3. Pull Ollama models
-
-```bash
-ollama pull qwen2.5:3b
-ollama pull nomic-embed-text
-```
-
-#### 4. Start Ollama
-
-```bash
-# OLLAMA_MAX_LOADED_MODELS=2 keeps both models in RAM simultaneously,
-# eliminating the ~26s model-swap overhead between embedding and generation.
-OLLAMA_MAX_LOADED_MODELS=2 OLLAMA_FLASH_ATTENTION=1 ollama serve
-```
-
-#### 5. Ingest knowledge base (first time only)
-
-```bash
-python ingest.py
-# Scrapes 7 HDB pages, embeds ~275 child chunks.
-# Takes 15–25 min on Intel CPU. Progress is saved every 20 chunks.
-
-# To wipe and re-ingest from scratch:
-python ingest.py --reset
-```
-
-#### 6. Launch BTObot
-
-```bash
-chainlit run app.py
-# Opens at http://localhost:8000
-```
-
-The welcome message appears immediately. Both Ollama models warm up in the background (~50s on Intel CPU). The first query takes ~50–80s; subsequent queries are faster once models are resident.
 
 ---
 
@@ -273,59 +159,46 @@ BTObot/
 └── parent_store/                 # Shelve store for parent chunks (created by ingest.py, git-ignored)
 ```
 
----
-
-## Configuration Reference
-
-All values can be overridden in `.env`:
-
-| Variable | Default | Effect |
-|---|---|---|
-| `LLM_MODEL` | `qwen2.5:3b` | Ollama LLM model tag |
-| `EMBED_MODEL` | `nomic-embed-text` | Ollama embedding model tag |
-| `LLM_TEMPERATURE` | `0.3` | Lower = more factual, less creative |
-| `PARENT_CHUNK_SIZE` | `1200` | Characters per parent chunk stored in shelve |
-| `CHILD_CHUNK_SIZE` | `600` | Characters per child chunk indexed in ChromaDB |
-| `TOP_K_CHILDREN` | `10` | Child chunks fetched from ChromaDB per query |
-| `TOP_N_FINAL` | `3` | Parent chunks passed to LLM after reranking |
-| `CONTEXT_CHARS_PER_SOURCE` | `700` | Characters of each source injected into LLM prompt |
-| `CHROMA_PATH` | `./chroma_db` | ChromaDB persistence directory |
-| `PARENT_STORE_PATH` | `./parent_store` | Shelve file path for parent documents |
-
-**To speed up generation further**, swap to a smaller model (no re-ingest needed):
-```
-LLM_MODEL=qwen2.5:1.5b   # ~2× faster generation, slightly lower quality
-```
-
-**Changing `EMBED_MODEL` requires re-ingesting** (`python ingest.py --reset`) because vector dimensions change.
-
----
-
 ## Evaluation
 
-### Chosen methodology: human eval on a golden test set + LLM-as-judge for citation faithfulness
+### Chosen Methodology: Human Eval on a Golden Test Set 
 
-**The question that actually matters** for BTObot is not "does the response sound good?" but "does it correctly tell someone whether they qualify for a grant?" That is a factual, high-stakes question with a right answer derivable from HDB policy. That narrows the field considerably.
+BTObot is a RAG system for public-sector policy guidance. We are evaluating - factual correctness, citation faithfulness.
 
-**Why not a benchmark?** No labelled dataset of BTO eligibility questions exists. Constructing one from scratch still requires humans to write questions and verify ground-truth answers — that is human eval, just with extra steps.
+**Golden Test Set**
 
-**Why not LLM-as-judge for factual accuracy?** Two problems. First, a judge model cannot verify a claim against HDB policy it has never seen — it can only assess whether the claim sounds plausible, which is exactly the failure mode we are trying to catch. Second, LLMs are well-documented to reward fluent, confident answers regardless of correctness, and eligibility rules are full of specific figures ($14,000 income ceiling, $80,000 grant cap) where a confident wrong number is worse than no answer.
-
-**Why not pure ablation?** Ablation is useful for understanding which components contribute what — parent-child vs flat chunking, reranking vs no reranking — but it answers a relative question ("does component X help?") rather than an absolute one ("is the system trustworthy enough to use?"). Ablations would be a useful second layer after establishing a baseline, not a substitute for it.
-
-**What is actually proposed:**
-
-1. **Golden test set (~30 questions), hand-curated across four categories:**
-   - Eligibility lookups with clear yes/no ground truth (*"A couple earning $10,500/month — do they qualify for the EHG?"*)
-   - Specific figure retrieval (*"What is the income ceiling for a 5-room flat under the Family Grant?"*)
-   - Process/timeline questions (*"When does the HLE letter need to be obtained by?"*)
-   - Out-of-scope questions that should trigger a deflection (*"What is the resale levy for a 5-room flat?"*)
+1. 15 Questions hand-curated across four categories:
+   - Eligibility lookups with clear yes/no ground truth (E) 
+   - Specific figure retrieval (F)
+   - Process/timeline questions (P)
+   - Out-of-scope questions that should trigger a deflection (O) 
 
 2. **Human scoring** on the first three categories: pass/fail per question, judged by someone who has read the source HDB pages. The scoring criterion is factual correctness, not fluency. Target: ≥80% pass rate; deflection rate of 100% on out-of-scope questions.
 
-3. **LLM-as-judge scoped to citation faithfulness** on the first two categories: given the source passage and the answer, does the cited passage actually entail the claim attached to it? This is textual entailment — a task LLMs handle reliably — and it does not require domain knowledge. It can be run automatically across all 30 questions and gives a signal on hallucination that human eval alone would miss in subtle cases.
+| #  | Category | Question                                                                                  | Model Response Summary                                                          | Result    |
+| -- | -------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------- |
+| 1  | E        | Does a couple with combined monthly income of $10,500 qualify for Enhanced Housing Grant? | Refused and redirected to HDB website instead of applying income threshold rule | ❌ Fail    |
+| 2  | E        | Can a couple where one party is SC and the other PR apply for a BTO flat?                 | Correctly stated eligibility under SC/PR scheme                                 | ✅ Pass    |
+| 3  | E        | Can two single Singapore Citizens (≥35) jointly apply for a BTO flat?                     | Correctly stated eligibility under Joint Singles Scheme                         | ✅ Pass    |
+| 4  | E        | Can two Singapore PRs apply together for a BTO flat?                                      | Incorrectly refused to answer (missing eligibility rule SC requirement)         | ❌ Fail    |
+| 5  | F        | What is the monthly household income ceiling for purchasing a new flat?                   | Correctly retrieved income ceiling figure                                       | ✅ Pass    |
+| 6  | F        | How much grant can I receive with combined monthly income of $10,000?                     | Incorrect / incomplete grant computation                                        | ❌ Fail    |
+| 7  | F        | What income thresholds determine Enhanced CPF Housing Grant amount?                       | Correct explanation of tiered thresholds                                        | ✅ Pass    |
+| 8  | F        | How is household income calculated?                                                       | Correct explanation of income computation method                                | ✅ Pass    |
+| 9  | P        | What is the correct sequence of steps from BTO application to key collection?             | Correct full process flow                                                       | ✅ Pass    |
+| 10 | P        | What is the process of buying a BTO?                                                      | Correct high-level process explanation                                          | ✅ Pass    |
+| 11 | P        | When can I apply for BTO balloting?                                                       | Hallucinated incorrect timing / eligibility condition                           | ❌ Fail    |
+| 12 | P        | When does the HLE letter need to be obtained relative to flat selection?                  | Incorrect refusal (did not apply known rule)                                    | ❌ Fail    |
+| 13 | O        | What is the resale levy amount for selling a 5-room subsidised flat?                      | Correctly deflected (out-of-scope)                                              | ✅ Deflect |
+| 14 | O        | How is ABSD calculated for a second residential property?                                 | Correctly deflected (out-of-scope)                                              | ✅ Deflect |
+| 15 | O        | Which BTO project is the best investment?                                                 | Correctly deflected (out-of-scope)                            | ✅ Deflect |
 
-**What the numbers would tell you.** A high pass rate with low citation faithfulness means the model is getting the right answers by luck or general knowledge, not grounding — a deployment risk. A low pass rate with high citation faithfulness means the retrieval is surfacing the right passages but the LLM is misreading them — a different problem. The combination distinguishes between retrieval failures, generation failures, and grounding failures in a way that a single aggregate score cannot.
+Overall Evaluation
+- Total Pass Rate (E + F + P): 7 / 12 → 58.3%
+- Out-of-Scope Deflection: 100% (Target Achieved)
+- Main failure modes:
+   1. Over-refusal (deflection instead of answering grounded eligibility questions)
+   2. Hallucinated or incomplete process reasoning 
 
 ## Known Limitations
 
@@ -343,17 +216,6 @@ LLM_MODEL=qwen2.5:1.5b   # ~2× faster generation, slightly lower quality
 - **3B parameter model**: `qwen2.5:3b` is capable for extraction and summarisation from provided context but can make errors on complex multi-condition eligibility questions (e.g., "if my income is $6,000 and I am a PR married to a SC, what grants apply?"). Always verify against the cited source.
 - **Hallucination risk**: Although instructed to cite only provided context, the model may occasionally blend in general knowledge. The inline citations [1][2][3] allow you to check whether each claim appears in the source.
 - **Context window budget**: With `num_predict=400`, responses are capped at ~400 tokens. Long eligibility explanations may be cut off.
-
-### Performance
-- **CPU-only on Intel Mac**: Ollama does not support GPU (Metal) on Intel Macs — only on Apple Silicon (M1/M2/M3). All inference runs on CPU.
-- **~50–80s per query**: At 5–8 tokens/second on Intel Core i7, a 400-token answer takes 50–80 seconds. This is a hardware constraint that cannot be resolved in software beyond model switching.
-- **Model warmup**: On the first query after a cold start (or after Ollama unloads models due to the 5-minute keep-alive timeout), each model takes ~26s to load from disk, adding up to ~52s to latency.
-- **Ingest takes 15–25 min**: All 275 child chunks are embedded via Ollama's HTTP API sequentially on CPU. Progress is saved after every 20-chunk batch, so a crash can be recovered by re-running `python ingest.py` (without `--reset`).
-
-### Session behaviour
-- **No persistence across browser tabs**: Chainlit sessions are tab-scoped. Conversation history does not carry over to a new tab or a page refresh.
-- **History limited to 1 exchange**: Only the last question–answer pair is retained in the LLM context to keep prompt length short on CPU. This means the bot has no memory of earlier turns in the same conversation.
-- **Single-user**: There is no authentication. Anyone with network access to `localhost:8000` can use the bot.
 
 ---
 
