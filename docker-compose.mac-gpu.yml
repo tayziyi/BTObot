@@ -16,14 +16,20 @@
 
 services:
 
-  # Suppress the bundled Ollama container — we use the native host one instead.
+  # Replace the bundled Ollama with a trivial no-op container that passes its
+  # health check immediately. This satisfies btobot's depends_on without starting
+  # a real Ollama inside Docker. The actual Ollama runs natively on your Mac
+  # (started in Terminal 1) and btobot reaches it via host.docker.internal.
   ollama:
-    profiles: ["bundled-ollama"]   # inactive unless --profile bundled-ollama is passed
+    image: alpine
+    command: ["tail", "-f", "/dev/null"]
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 1s
+      timeout: 1s
+      retries: 1
+      start_period: 0s
 
   btobot:
-    depends_on:
-      ollama:
-        condition: service_started
-        required: false            # don't wait for the (inactive) ollama service
     environment:
       OLLAMA_BASE_URL: http://host.docker.internal:11434   # host's native Ollama

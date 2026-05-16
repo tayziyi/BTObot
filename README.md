@@ -6,6 +6,8 @@ AI assistant for Singapore's Build-To-Order (BTO) housing scheme. Designed for y
 
 ## What BTObot Does
 
+Watch [Demo Video](https://youtu.be/ybWzFyDmk4o) to see how it works.
+
 It answers natural-language questions about BTO housing by:
 
 1. **Retrieving** the most relevant context from a pre-indexed snapshot of HDB's official guidance pages and latest trustworthy blogs
@@ -105,7 +107,16 @@ Python packages: see `requirements.txt`.
 
 BTObot can be ran with **Docker** in one command and no manual setup.
 
+[Ollama](https://ollama.com/download/mac) installed .
+
+
 Docker's bundled Ollama container runs CPU-only on all platforms. Use the override files below to enable GPU:
+
+```bash
+git clone <repo-url>
+cd BTObot
+cp .env.example .env          # edit if needed (defaults work out of the box)
+```
 
 ---
 **Apple Silicon Mac** — run Ollama natively (Metal GPU), BTObot in Docker:
@@ -119,7 +130,7 @@ docker compose -f docker-compose.yml -f docker-compose.mac-gpu.yml up --build
 
 **Windows / Linux with NVIDIA** — requires [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html):
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.nvidia-gpu.yml up --build
+docker compose -f docker-compose.yml up --build
 ```
 
 #### Day-to-day commands (after first build)
@@ -128,7 +139,7 @@ docker compose -f docker-compose.yml -f docker-compose.nvidia-gpu.yml up --build
 |---|---|
 | Normal start (CPU) | `docker compose up` |
 | Normal start (Apple Silicon GPU) | `ollama serve` + `docker compose -f docker-compose.yml -f docker-compose.mac-gpu.yml up` |
-| Normal start (NVIDIA GPU) | `docker compose -f docker-compose.yml -f docker-compose.nvidia-gpu.yml up` |
+| Normal start (NVIDIA GPU) | `docker compose -f docker-compose.yml -f up` |
 | After editing source code | add `--build` to whichever command above |
 | Stop (keep data) | `docker compose down` |
 | Wipe DB and re-ingest | `docker compose down -v` then `docker compose up` |
