@@ -71,8 +71,6 @@ On the first `import flashrank`, the process hung for 30 seconds then threw a co
 
 The replacement was cosine similarity using the already-loaded `nomic-embed-text` vectors — no new model download, no new dependency, just numpy arithmetic on vectors already in memory. It provides marginal reranking benefit (second scoring pass with query vector vs parent chunk vector rather than child chunk vector) but cannot capture query–document interaction the way a cross-encoder would.
 
-**SSL certificate issues.** HTTPS calls from Python were failing with `SSL: CERTIFICATE_VERIFY_FAILED`. The machine was behind a proxy performing SSL inspection — intercepting TLS connections and re-signing certificates with its own CA. Python's `requests` and `urllib` use a bundled OpenSSL certificate store (via certifi) that does not include the proxy CA. Fix: `pip install pip-system-certs`, which patches Python's SSL context to use the macOS system keychain. One install, no configuration. Listed in requirements but is a no-op on machines not behind an SSL-inspecting proxy.
-
 ---
 
 ## Performance Optimisation
